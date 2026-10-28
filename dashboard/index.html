@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FACAMP • Observatório industrial</title><link rel="stylesheet" href="/static/style.css?v=20261028-diagrams2"><script src="/static/vendor/chart.umd.js" defer></script><script src="/static/app.js" defer></script></head>
+<body><a class="skip" href="#principal">Pular para o conteúdo</a>
+<aside class="sidebar"><a class="brand" href="#visao"><span class="brand-icon">F/</span><span>FACAMP<small>OBSERVATÓRIO INDUSTRIAL</small></span></a><div class="plant"><span class="signal">◈</span> Planta 01<small>Laboratório de telemetria</small></div><nav aria-label="Seções"><a href="#visao">◫ <span>Visão geral</span></a><a href="#monitoramento">⌁ <span>Monitoramento</span></a><a href="#alarmes">△ <span>Alarmes</span></a><a href="#sistema">◉ <span>Sistema</span></a></nav><div class="sidebar-bottom">TRATAMENTO E ARMAZENAMENTO<br>DA INFORMAÇÃO<hr>Projeto acadêmico · 2026<small>Python → MQTT → PostgreSQL</small></div></aside>
+<div class="workspace"><header class="topbar"><span>OPERAÇÃO / <strong>PLANTA 01</strong></span><span id="connection" role="status">○ Conectando…</span></header>
+<main id="principal"><section id="visao"><div class="heading"><div><p class="eyebrow">INTELIGÊNCIA OPERACIONAL</p><h1>Visão da planta<span>.</span></h1><p class="subtitle">Do sensor à decisão. Acompanhe a condição dos equipamentos.</p></div><div class="update"><span class="live-dot"></span> Atualização automática<small id="last-update">Aguardando API</small></div></div>
+<div id="notice" class="notice" role="alert">Carregando dados persistidos…</div><div class="stats"><article><span>Condição da planta</span><strong id="plant-state">—</strong><small id="plant-detail">Aguardando leituras</small></article><article><span>Equipamentos</span><strong id="asset-count">—</strong><small>Ativos cadastrados</small></article><article><span>Sensores atuais</span><strong id="sensor-count">—</strong><small id="sensor-detail">Verificação por timestamp</small></article><article><span>Alarmes ativos</span><strong id="alarm-count">—</strong><small>Ocorrências em aberto</small></article></div>
+<div class="section-title"><h2>Condição dos equipamentos</h2><span>Última medição de cada sensor</span></div><div id="assets" class="assets"><p>Carregando equipamentos…</p></div></section>
+<section id="monitoramento"><div class="section-title"><div><p class="eyebrow">SÉRIES TEMPORAIS</p><h2>Monitoramento</h2></div><span>Dados consultados no PostgreSQL</span></div><div class="panel"><div class="filters"><label>Equipamento<select id="asset-filter"><option value="">Todos os equipamentos</option></select></label><label>Sensor<select id="sensor-filter"><option value="">Aguardando sensores</option></select></label><label>Período<select id="period-filter"><option value="15">15 minutos</option><option value="60" selected>1 hora</option><option value="360">6 horas</option><option value="1440">24 horas</option></select></label></div><div class="chart-heading"><h3 id="chart-title">Histórico de leituras</h3><span id="chart-note">Carregando…</span></div><div class="chart-wrap"><canvas id="history-chart" role="img" aria-label="Série temporal do sensor selecionado"></canvas><p id="chart-empty" role="status">Carregando histórico…</p></div><p class="footnote">Horário local · Até 2.000 leituras mais recentes por consulta · Uma grandeza por eixo</p><details><summary>Consultar últimas leituras em tabela</summary><div class="table-wrap"><table><thead><tr><th>Horário</th><th>Valor</th><th>Qualidade</th></tr></thead><tbody id="history-rows"></tbody></table></div></details></div></section>
+<section id="alarmes"><div class="section-title"><div><p class="eyebrow">REGISTRO DE EVENTOS</p><h2>Alarmes e normalizações</h2></div><label class="inline-label">Exibir<select id="alarm-filter"><option value="">Todo o histórico</option><option value="OPEN">Abertos</option><option value="CLOSED">Encerrados</option></select></label></div><div class="panel table-wrap"><table><thead><tr><th>Ocorrência / sensor</th><th>Severidade</th><th>Leitura</th><th>Abertura</th><th>Fechamento</th><th>Situação</th></tr></thead><tbody id="alarm-rows"><tr><td colspan="6">Carregando alarmes…</td></tr></tbody></table><p class="footnote">Até 200 eventos recentes. Reconhecimento (ACK) preserva a condição de alarme.</p></div></section>
+<section id="sistema"><div class="section-title"><div><p class="eyebrow">CADEIA DE DADOS</p><h2>Informações do sistema</h2></div></div><div class="system-grid"><div class="panel"><h3>Saúde dos serviços</h3><dl><div><dt>PostgreSQL</dt><dd id="db-health">Verificando</dd></div><div><dt>Broker MQTT</dt><dd id="mqtt-health">Verificando</dd></div><div><dt>Leituras persistidas</dt><dd id="total">—</dd></div><div><dt>Maior atraso de ingestão¹</dt><dd id="lag">—</dd></div></dl><p class="footnote">¹ Entre envio e persistência das últimas leituras. Serviço acessível não garante sensor ativo.</p></div><div class="panel"><h3>Como interpretar</h3><p>Uma leitura é atual quando chega há menos de três intervalos de coleta, mais dois segundos, e possui qualidade maior que zero.</p><div class="legend"><span class="badge NORMAL">Normal</span><span class="badge WARN">Atenção</span><span class="badge CRITICAL">Crítico</span><span class="badge OFFLINE">Indisponível</span></div><p class="footnote" id="threshold-note">Carregando limites cadastrados no banco…</p></div></div></section>
+<footer class="explainer-footer" id="como-funciona" aria-labelledby="explainer-title">
+  <div class="explainer-heading">
+    <div><p class="eyebrow">POR DENTRO DO SISTEMA</p><h2 id="explainer-title">Como esta aplicação funciona</h2>
+    <p>Entenda onde os dados ficam e o caminho que percorrem até aparecer nesta tela.</p></div>
+    <div class="explainer-links"><a href="#diagrama-banco">Banco de dados ↓</a><a href="#diagrama-arquitetura">Arquitetura ↓</a></div>
+  </div>
+
+  <section class="explanation-panel" id="diagrama-banco" aria-labelledby="database-diagram-title">
+    <div class="diagram-heading"><span class="diagram-index" aria-hidden="true">01</span><div><h3 id="database-diagram-title">Estrutura do banco de dados</h3><p>Um equipamento possui sensores. Cada sensor conecta suas leituras, seus limites e seus alarmes.</p></div></div>
+    <figure class="database-figure" aria-describedby="database-diagram-caption">
+      <div class="schema-layout">
+        <article class="db-node db-asset">
+          <div class="node-heading"><h4>Equipamentos</h4><code>assets</code></div>
+          <ul class="node-fields"><li><span class="key-label">PK</span><code>id</code></li></ul>
+          <p>Nome, setor e criticidade.</p>
+          <div class="node-example">Ex.: MOTOR-07</div>
+        </article>
+        <div class="schema-link" aria-hidden="true"><span>1:N</span><svg viewBox="0 0 56 24"><path d="M2 12 H51 M44 5 L51 12 L44 19"/></svg></div>
+        <article class="db-node db-sensor">
+          <div class="node-heading"><h4>Sensores</h4><code>sensors</code></div>
+          <ul class="node-fields"><li><span class="key-label">PK</span><code>id</code></li><li><span class="key-label foreign-key">FK</span><code>asset_id</code></li></ul>
+          <p>Tipo, unidade, intervalo de coleta e habilitação.</p>
+          <div class="node-example">Cada sensor pertence a um equipamento.</div>
+        </article>
+        <svg class="schema-branch" viewBox="0 0 64 600" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 300 H25 M25 96 V504 M25 96 H60 M25 300 H60 M25 504 H60"/>
+          <path d="M53 89 L60 96 L53 103 M53 293 L60 300 L53 307 M53 497 L60 504 L53 511"/>
+        </svg>
+        <div class="db-outputs">
+          <article class="db-node db-telemetry">
+            <div class="node-heading"><h4>Leituras</h4><code>telemetry</code></div>
+            <ul class="node-fields"><li><span class="key-label">PK + FK</span><code>sensor_id</code></li><li><span class="key-label">PK</span><code>time</code></li></ul>
+            <p>Valor, qualidade, sequência e horário de recebimento.</p>
+            <div class="node-relation"><b>1:N</b> Um sensor → várias leituras</div>
+          </article>
+          <article class="db-node db-thresholds">
+            <div class="node-heading"><h4>Limites de alarme</h4><code>sensor_thresholds</code></div>
+            <ul class="node-fields"><li><span class="key-label">PK + FK</span><code>sensor_id</code></li></ul>
+            <p>Limites altos e baixos de atenção e criticidade.</p>
+            <div class="node-relation"><b>1:0..1</b> Um sensor → até uma configuração</div>
+          </article>
+          <article class="db-node db-alarms">
+            <div class="node-heading"><h4>Ocorrências</h4><code>alarms</code></div>
+            <ul class="node-fields"><li><span class="key-label">PK</span><code>id</code></li><li><span class="key-label foreign-key">FK</span><code>sensor_id</code></li></ul>
+            <p>Abertura, fechamento, severidade, situação, valor e mensagem.</p>
+            <div class="node-relation"><b>1:N</b> Um sensor → vários alarmes no histórico</div>
+          </article>
+        </div>
+      </div>
+      <figcaption id="database-diagram-caption" class="diagram-caption"><span><b>PK</b> identifica um registro.</span><span><b>FK</b> relaciona uma tabela à outra.</span><span><b>1:N</b> permite vários registros relacionados; pode haver nenhum.</span></figcaption>
+    </figure>
+    <div class="diagram-takeaway"><strong>Por que separar?</strong><p>O cadastro descreve o equipamento e o sensor; a telemetria preserva as medições ao longo do tempo. A chave <code>sensor_id + time</code> evita leituras duplicadas. Os limites são opcionais e os alarmes mantêm o histórico, com no máximo uma ocorrência ativa por sensor.</p></div>
+  </section>
+
+  <section class="explanation-panel" id="diagrama-arquitetura" aria-labelledby="architecture-diagram-title">
+    <div class="diagram-heading"><span class="diagram-index" aria-hidden="true">02</span><div><h3 id="architecture-diagram-title">Arquitetura da aplicação</h3><p>Siga as setas: uma medição nasce no simulador, é armazenada e chega ao operador.</p></div></div>
+    <figure class="architecture-figure" aria-describedby="architecture-diagram-caption">
+      <ol class="application-flow">
+        <li class="flow-step"><span class="flow-number" aria-hidden="true">1</span><h4>Gerar</h4><strong>Sensores simulados</strong><span class="flow-tech">Python</span><p>Produzem valor, unidade, horário e sequência.</p><div class="flow-protocol">Mensagem JSON</div></li>
+        <li class="flow-step"><span class="flow-number" aria-hidden="true">2</span><h4>Transportar</h4><strong>Broker MQTT</strong><span class="flow-tech">Mosquitto</span><p>Recebe e distribui as mensagens por tópico.</p><div class="flow-protocol">MQTT · QoS 1</div></li>
+        <li class="flow-step"><span class="flow-number" aria-hidden="true">3</span><h4>Validar</h4><strong>Ingestor</strong><span class="flow-tech">Python</span><p>Valida, agrupa leituras e aplica as regras de alarme.</p><div class="flow-protocol">SQL · transação</div></li>
+        <li class="flow-step"><span class="flow-number" aria-hidden="true">4</span><h4>Armazenar</h4><strong>Banco de dados</strong><span class="flow-tech">PostgreSQL + TimescaleDB</span><p>Preserva cadastros, leituras, limites e alarmes.</p><div class="flow-protocol">Histórico persistido</div></li>
+        <li class="flow-step"><span class="flow-number" aria-hidden="true">5</span><h4>Consultar</h4><strong>API</strong><span class="flow-tech">FastAPI</span><p>Consulta o banco e entrega os dados ao navegador.</p><div class="flow-protocol">HTTP · JSON</div></li>
+        <li class="flow-step"><span class="flow-number" aria-hidden="true">6</span><h4>Acompanhar</h4><strong>Dashboard</strong><span class="flow-tech">HTML, CSS e Chart.js</span><p>Mostra valores atuais, gráficos e ocorrências.</p><div class="flow-protocol">Consulta a cada 3 s¹</div></li>
+      </ol>
+      <figcaption id="architecture-diagram-caption" class="diagram-caption">As setas representam o caminho da informação. O navegador solicita dados à API; a API consulta o banco. O dashboard também é servido pelo FastAPI.</figcaption>
+    </figure>
+    <div class="architecture-notes">
+      <div><strong>Coleta e visualização independentes</strong><p>Os serviços de coleta continuam gravando mesmo quando esta página está fechada. Eles rodam localmente pelo Compose.</p></div>
+      <div><strong>Um alarme tem começo e fim</strong><p>O ingestor consulta os limites cadastrados e grava leitura e mudança de alarme na mesma transação. Ao normalizar, encerra a ocorrência e preserva o histórico.</p></div>
+    </div>
+    <p class="diagram-footnote">¹ A próxima atualização ocorre 3 segundos após a consulta anterior terminar. Diagrama explicativo da implementação local; não representa indicadores de disponibilidade.</p>
+  </section>
+  <div class="footer-brandline"><strong>FACAMP</strong><span>IoT Industrial em Tempo Real · Laboratório local</span><a href="/docs">Documentação da API ↗</a><a href="#visao">Voltar ao início ↑</a></div>
+</footer></main></div></body></html>

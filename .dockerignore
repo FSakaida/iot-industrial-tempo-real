@@ -1,0 +1,17 @@
+.env*
+.venv
+venv
+.git
+__pycache__
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.DS_Store
+*.log
+*.zip
+*.dump
+*.backup
+*.pem
+*.key
+evidence
+docs/references

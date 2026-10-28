@@ -1,0 +1,68 @@
+name: facamp-iot
+x-app: &app
+  build: .
+  image: facamp-iot-app:local
+  restart: unless-stopped
+  environment: &env
+    POSTGRES_HOST: db
+    POSTGRES_PORT: 5432
+    POSTGRES_DB: ${POSTGRES_DB:-iot_industrial}
+    POSTGRES_USER: ${APP_DB_USER:-iot_app}
+    POSTGRES_PASSWORD: ${APP_DB_PASSWORD:?Execute python3 scripts/setup.py}
+    MQTT_HOST: mosquitto
+    MQTT_PORT: 1883
+    BATCH_MAX: ${BATCH_MAX:-100}
+    FLUSH_SECONDS: ${FLUSH_SECONDS:-1.0}
+    DB_RETRIES: ${DB_RETRIES:-4}
+    SIM_INTERVAL_FACTOR: ${SIM_INTERVAL_FACTOR:-1}
+  depends_on:
+    db: {condition: service_healthy}
+    mosquitto: {condition: service_healthy}
+services:
+  db:
+    image: timescale/timescaledb:2.18.2-pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-iot_industrial}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Execute python3 scripts/setup.py}
+      APP_DB_USER: ${APP_DB_USER:-iot_app}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?Execute python3 scripts/setup.py}
+      TIMESCALEDB_TELEMETRY: 'off'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./sql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -h 127.0.0.1 -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  mosquitto:
+    image: eclipse-mosquitto:2.0.21
+    restart: unless-stopped
+    ports: ['127.0.0.1:${MQTT_PORT:-1883}:1883']
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mqttdata:/mosquitto/data
+    healthcheck:
+      test: [CMD, mosquitto_pub, -h, localhost, -t, health, -m, ok]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  api:
+    <<: *app
+    ports: ['127.0.0.1:${API_PORT:-8000}:8000']
+    healthcheck:
+      test: [CMD, python, -c, 'import urllib.request; urllib.request.urlopen("http://localhost:8000/health")']
+      interval: 5s
+      timeout: 4s
+      retries: 20
+  ingestor:
+    <<: *app
+    command: [python, -m, app.ingestor]
+  simulator:
+    <<: *app
+    command: [python, -m, app.simulator]
+volumes:
+  pgdata:
+  mqttdata:

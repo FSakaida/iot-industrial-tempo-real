@@ -1,0 +1,29 @@
+{
+  "result": "PASS",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "width": 768,
+      "height": 1024
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "checks": [
+    "sem overflow horizontal da página após resize",
+    "filtros ativo e sensor",
+    "unidade do gráfico",
+    "filtro de alarmes OPEN",
+    "estado crítico por MQTT",
+    "API parada mostra perda de conexão e 0 sensores atuais",
+    "recuperação automática da API",
+    "filtro de período",
+    "limites exibidos obtidos da API"
+  ],
+  "method": "Inspeção real via navegador; sem emulação de dados"
+}

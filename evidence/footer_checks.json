@@ -1,0 +1,19 @@
+{
+  "result": "PASS",
+  "unit_tests": 56,
+  "unit_output": "pytest_footer.txt",
+  "viewports": [
+    1440,
+    768,
+    390
+  ],
+  "checks": [
+    "cinco tabelas e relações conferidas com DDL",
+    "diagrama da arquitetura com seis etapas",
+    "legendas PK/FK e limites opcionais",
+    "sem overflow horizontal em três larguras",
+    "fluxo vertical no celular",
+    "etiquetas de chave legíveis no celular"
+  ],
+  "method": "pytest e inspeção real do navegador; mudança visual"
+}
